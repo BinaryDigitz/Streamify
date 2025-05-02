@@ -100,3 +100,8 @@ export const loginUser = asyncHandler(async (req, res) => {
     user: rest,
   });
 });
+
+// LOG OUT :/api/auth/sign-out
+export const logout = asyncHandler( async ( req, res ) => {
+  
+})

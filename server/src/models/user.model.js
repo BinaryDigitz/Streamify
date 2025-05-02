@@ -4,7 +4,7 @@ import { JWT_SECRET } from "../config/env.js";
 
 // Basic schema, Feel free to add yours
 const userSchema = mongoose.Schema({
-    name: {
+    fullName: {
         type:String,
         requird: true,
         minLength:3,
@@ -23,6 +23,52 @@ const userSchema = mongoose.Schema({
         minLength:6,
         maxLength: 250
     },
+    bio: {
+        type:String,
+        default: '',
+        minLength:6,
+        maxLength: 250
+    },
+    profilePhoto: {
+        type:String,
+        default: '',
+        minLength:6,
+        maxLength: 250
+    },
+    profilePhoto: {
+        type:String,
+        default: '',
+        minLength:6,
+        maxLength: 250
+    },
+    nativeLanguage: {
+        type:String,
+        default: '',
+        minLength:6,
+        maxLength: 250
+    },
+    learningLanguage: {
+        type:String,
+        default: '',
+        minLength:6,
+        maxLength: 250
+    },
+    location: {
+        type:String,
+        default: '',
+        minLength:6,
+        maxLength: 250
+    },
+    isOnboarded: {
+        type:Boolean,
+        default: false, 
+    },
+    friends: [
+        {
+            type:mongoose.Schema.Types.ObjectId,
+            ref:'User'
+        }
+    ],
 }, { timestamp: true}, {minimize: false })
 
 // Token generation token is stored in the server
