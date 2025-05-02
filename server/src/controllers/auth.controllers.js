@@ -5,14 +5,7 @@ import { NODE_ENV } from "../config/env.js";
 
 // SIGN UP: /api/auth/sign-up
 export const createUser = asyncHandler(async (req, res) => {
-  const { name, email, password } = req.body;
-  if (!name || !email || !password)
-    return res.json({
-      success: false,
-      message: "Invalid Input, Please fill all field",
-      statusCode: 400,
-    });
-
+ const { fullName, email, password } = req.body
   // check if user already exist in the database
   const isUserExisting = await UserModel.findOne({ email });
   if (isUserExisting)
@@ -22,20 +15,16 @@ export const createUser = asyncHandler(async (req, res) => {
       statusCode: 400,
     });
 
-  // The user is new
-  // Hash the user password
-  const HashedPassword = bcrypt.hash(password, 10);
-
+  const idx = Math.floor(Math.random() * 100 + 1) // generate a number from 1 to 100
+  const randomAvatar = `https://avatar.iran.liara.run/public/${idx}.png`
   // save user to database
-  let user = await UserModel.create({ name, email, password: HashedPassword });
+  let user = await UserModel.create({ fullName, email, password, profilePhoto: randomAvatar });
   await user.save();
-
+ //TODO: create the user in stream as well
   // generate token from the function stored in the database
   const token = user.generateToken();
-
-  // Sending the token as cookie and in the response body
   // set token to expire in 3 days
-  res.cookies("userToken", token, {
+  res.cookie("userToken", token, {
     httpOnly: true,
     secure: NODE_ENV === "production",
     sameSite: NODE_ENV === "production" ? "none" : "strict",
@@ -71,7 +60,7 @@ export const loginUser = asyncHandler(async (req, res) => {
 
   // user is registered in the database
   // verify password
-  const isValidPassword = bcrypt.compare(password, user.password);
+  const isValidPassword = await user.isValidPassword(password);
   if (!isValidPassword)
     return res.json({
       success: false,
@@ -84,7 +73,7 @@ export const loginUser = asyncHandler(async (req, res) => {
 
   // Sending the token as cookie and in the response body
   // set token to expire in 3 days
-  res.cookies("userToken", token, {
+  res.cookie("userToken", token, {
     httpOnly: true,
     secure: NODE_ENV === "production",
     sameSite: NODE_ENV === "production" ? "none" : "strict",
@@ -103,5 +92,6 @@ export const loginUser = asyncHandler(async (req, res) => {
 
 // LOG OUT :/api/auth/sign-out
 export const logout = asyncHandler( async ( req, res ) => {
-  
+  res.clearCookie('token')
+  res.status(200).json({ success: true, message: 'Log out successful'})
 })

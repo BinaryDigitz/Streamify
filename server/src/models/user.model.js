@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 import jwt from 'jsonwebtoken'
 import { JWT_SECRET } from "../config/env.js";
+import bcrypt from 'bcrypt'
 
 // Basic schema, Feel free to add yours
 const userSchema = mongoose.Schema({
@@ -26,13 +27,11 @@ const userSchema = mongoose.Schema({
     bio: {
         type:String,
         default: '',
-        minLength:6,
         maxLength: 250
     },
     profilePhoto: {
         type:String,
         default: '',
-        minLength:6,
         maxLength: 250
     },
     profilePhoto: {
@@ -44,19 +43,19 @@ const userSchema = mongoose.Schema({
     nativeLanguage: {
         type:String,
         default: '',
-        minLength:6,
+        
         maxLength: 250
     },
     learningLanguage: {
         type:String,
         default: '',
-        minLength:6,
+       
         maxLength: 250
     },
     location: {
         type:String,
         default: '',
-        minLength:6,
+        
         maxLength: 250
     },
     isOnboarded: {
@@ -76,7 +75,20 @@ const userSchema = mongoose.Schema({
 userSchema.methods.generateToken = function (){
     return jwt.sign({ userId: this._id}, JWT_SECRET, { expiresIn: '3d'})
 }
-
+userSchema.pre('save', async function(next) {
+    if(!this.isModified('password')) return next()
+    try{
+        this.password = await bcrypt.hash(this.password, 10)
+        next()
+    }
+    catch(ex){
+        next(ex)
+        console.log(ex.message);
+    }
+})
+userSchema.methods.isValidPassword = async function(enteredPassword){
+    return await bcrypt.compare(enteredPassword, this.password)
+}
 const UserModel = mongoose.model('User', userSchema)
 
 export default UserModel;
